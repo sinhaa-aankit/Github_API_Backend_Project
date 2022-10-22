@@ -87,3 +87,27 @@ exports.getUser = async (req, res) => {
         });
     }
 };
+
+exports.updateUser = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const newUser = await User.findOneAndUpdate({ id: id }, req.body, {
+            new: true,
+            runValidators: true,
+        });
+        if (!newUser) {
+            return next(new AppError("No user found with that ID", 404));
+        }
+        res.status(200).json({
+            status: "success",
+            data: {
+                newUser,
+            },
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: "fail",
+            message: err.message,
+        });
+    }
+};
