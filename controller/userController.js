@@ -111,3 +111,31 @@ exports.updateUser = async (req, res) => {
         });
     }
 };
+
+exports.searchFromDatabase = async (req, res) => {
+    try {
+        query = { ...req.query };
+        let sortBy;
+        if (query.sort) {
+            sortBy = query.sort;
+            delete query["sort"];
+            console.log(query);
+            sortBy = sortBy.split(",").join(" ");
+        }
+        let user = await User.find(query).sort(sortBy);
+        if (!user) {
+            return next(new AppError("No user found with that ID", 404));
+        }
+        res.status(200).json({
+            status: "success",
+            data: {
+                user,
+            },
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: "fail",
+            message: err.message,
+        });
+    }
+};
