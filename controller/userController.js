@@ -1,14 +1,13 @@
-const User = require("../model/userModel");
 const express = require("express");
 const app = express();
 let axios = require("axios");
-const { get } = require("mongoose");
+const User = require("../model/userModel");
 
 // return array of list of followers
 getFollowers = async (followers_url) => {
     followers = [];
     let user = await axios.get(followers_url);
-    console.log("followers:- ");
+    // console.log("followers:- ");
     for (let i = 0; i < user.data.length; i++) {
         // console.log(user.data[i].login);
         followers.push(user.data[i].login);
@@ -19,7 +18,7 @@ getFollowers = async (followers_url) => {
 getMutualFollowers = async (followers_url, following_url) => {
     followers = await getFollowers(followers_url);
     following = await getFollowers(following_url);
-    console.log("1");
+    // console.log("1");
     mutualFollowers = [];
     followers.forEach((element) => {
         if (following.includes(element)) {
@@ -33,17 +32,18 @@ getMutualFollowers = async (followers_url, following_url) => {
 
 exports.getUser = async (req, res) => {
     try {
-        let user = await User.findOne({ username: req.params.username });
+        const userLogin = req.params.login;
+        const user = await User.findOne({ login: userLogin });
         if (!user) {
             console.log("User not Found, Fetching from Github");
             let url = "https://api.github.com/users/";
-            url += req.params.username;
-            console.log(url);
+            url += userLogin;
+            // console.log(url);
             let user = await axios.get(url);
             // console.log(user);
             user = user.data;
             let following_url = url + "/following";
-            console.log(following_url);
+            // console.log(following_url);
             const mutualFollowers = await getMutualFollowers(
                 user.followers_url,
                 following_url
@@ -53,7 +53,7 @@ exports.getUser = async (req, res) => {
 
             const newUSer = await User.create({
                 id: user.id,
-                username: user.login,
+                login: user.login,
                 followers_url: user.followers_url,
                 location: user.location,
                 following_url: user.following_url,
